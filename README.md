@@ -5,17 +5,17 @@ These scripts will create storage pools that integrate SSDs as caching drives an
 * The entire virtual drive is added to the system as a single large volume
 
 # Scripts 
-## create-storage-space.ps1
+## new-storage-space.ps1
 Creates a tiered storage pool and allocates all the disk space to a single drive
 * You can change the drive letter and label by editing the variables at the top.
 * the script can auto size the drive and cache.  That didn't work for me so the script supports manual sizing.
 
-## destroy-storage-space
+## remove-storage-space
 Removes the virtual drive, the storage tiers and then the storage pool.
 * All drives are returned the _Primordial_ pool
 
 # Sample configuration
-_create-storage-space.ps_ took my three drives
+_new-storage-space.ps_ took my three drives
 * two 2TB HDD 
 * one 200GB SSD.  
 

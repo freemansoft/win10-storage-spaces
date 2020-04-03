@@ -2,19 +2,22 @@
 $StoragePoolName = "My Storage Pool"
 $SSDTierName = "SSDTier"
 $HDDTierName = "HDDTier"
-$TieredSpaceName = "My Tiered VirtualDisk"
+$TieredDiskName = "My Tiered VirtualDisk"
 
 # In reverse order of creation
-Get-VirtualDisk -FriendlyName $TieredSpaceName
-Remove-virtualdisk -friendlyName $TieredSpaceName -Confirm:$false
+Write-Output "Removing drive:"
+Get-VirtualDisk -FriendlyName $TieredDiskName
+Remove-virtualdisk -friendlyName $TieredDiskName -Confirm:$false
 
 # Remove Storage Tier
+Write-Output "Removing storage tiers:"
 Get-StorageTier
 Remove-StorageTier -FriendlyName $HDDTierName -Confirm:$false
 Remove-StorageTier -FriendlyName $SSDTierName -Confirm:$false
 Get-StorageTier
 
 # Remove the Storage Pool
+Write-Output "Removing storage pool:"
 Get-StoragePool -FriendlyName $StoragePoolName | Get-PhysicalDisk | Select FriendlyName, MediaType
 Remove-StoragePool -FriendlyName $StoragePoolName -Confirm:$false
 # Show just the primoridal pool
