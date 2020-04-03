@@ -20,8 +20,11 @@ _create-storage-space.ps_ took my three drives
 * one 200GB SSD.  
 
 and turned them them into a 
-* single _mirrored_ 2TB data volume 
+* single _striped_ 3.6TB data volume 
 * fronted with a 200GB read/write cache.
+
+## Simple vs Mirror
+I believe it attempts to mirror both tiers so you would need 4 drives run mirror, to mirror both tiers
 
 ## Meaningless Benchmark
 All Storage Pool drives connected to 3Gp/s SATA

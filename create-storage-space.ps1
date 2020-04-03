@@ -12,15 +12,15 @@ $TieredSpaceName = "My Tiered VirtualDisk"
 #Change to suit - drive later and the label name
 $TieredDriveLetter = "Z"
 $TieredDriveLabel = "StorageDrive"
-#This should make it striped but it was still mirrored in all my testing possibly because of -AutoNumberOfColumns
+#Simple = striped.  The only option if you cann't "Mirror" in both tiers
 $ResiliencySetting = "Simple"
 
 #Comment these out if you want to try autozizng
 #Set values for cache and data storage sizes - cache is size of SSD - storage will be sum of storage disks
 #These must be Equal or smaller than the disk size available in that tier SSD and HDD
-$CacheSize = 210GB
-#Size for Mirror
-$StorageSize = 1.816TB
+#$CacheSize = 210GB
+#Size for data drive
+#$StorageSize = 3.6TB
 
 #Uncomment and put your HDD type here if it shows up as unspecified with "Get-PhysicalDisk -CanPool $True
 #    If your HDDs show up as Unspecified instead of HDD
@@ -55,6 +55,9 @@ $HDDTier = New-StorageTier -StoragePoolFriendlyName $StoragePoolName -FriendlyNa
 #Identify tier sizes within this storage pool for auto sizing
 $SSDTierSizes = (Get-StorageTierSupportedSize -FriendlyName $SSDTierName -ResiliencySettingName $ResiliencySetting).TierSizeMax
 $HDDTierSizes = (Get-StorageTierSupportedSize -FriendlyName $HDDTierName -ResiliencySettingName $ResiliencySetting).TierSizeMax 
+# need to size down.  this amount worked (!)
+$SSDTierSizes = [int64]($SSDTierSizes * 0.95)
+$HDDTierSizes = [int64]($HDDTierSizes * 0.95)
 
 #Autosizing didn't work with my configuration 3/2020
 if ($CacheSize -eq $null) {
