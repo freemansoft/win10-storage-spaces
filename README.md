@@ -27,7 +27,7 @@ and turned them them into a
 I believe it attempts to mirror both tiers so you would need 4 drives run mirror, to mirror both tiers
 
 ## Meaningless Benchmark
-All Storage Pool drives connected to 3Gp/s SATA
+All Storage Pool drives connected to 3Gb/s SATA
 
 
 ```
