@@ -1,9 +1,12 @@
 # Create Storage Spaces in Windows 10
-Windows Server O/S contains Storage Spaces support for fault domains and tiered storage.
-Windows 10 support Storage Spaces with a GUI Control Panel that does not include the tiered storage GUI. 
+Windows Server O/S contains Storage Spaces support for Server Spaces tiered storage. 
+You can front slower spinning disks with smaller faster SSDs. 
+Windows 10 has a Storage Spaces GUI Control Panel that does not include the tiered storage GUI. 
+This means Powershell must be used for all configuration.
 
-These scripts create tiered storage pools that integrate SSDs as caching drives and HDDs as storage drives. They assume you have at least one SSD and two HDDs.  
 ![Physical Disks](./images_folder/physical-disks.png)
+
+This repository contains scripts that create tiered storage pools that integrate SSDs as caching drives and HDDs as storage drives. They assume you have at least one SSD and one HDD.
 
 * The scripts automatically find all raw drives and add them to the pool.  
 * Some HDDs have their types incorrectly identified.  The script can coerce them to be MediaType:HDD
@@ -42,7 +45,7 @@ The control panel does not display or manipulate tiers
 
 
 ## Simple vs Mirror
-It attempts to mirror both tiers so you would need 4 drives run mirror, to mirror both tiers
+The "Mirror" resiliency level attempts to mirror both SSD and HDD tiers so you would need 4 drives run mirror, to mirror both tiers
 
 ## Meaningless Benchmark
 All Storage Pool drives connected to 3Gb/s SATA.  The write-back cache is not used with sequential writes over 256KB
@@ -66,3 +69,4 @@ Sequential 1MiB (Q=  1, T= 1):   154.147 MB/s [    147.0 IOPS]   230.149 MB/s [ 
 
 # Credits
 * Most of the script came from this great [blog article by Nils Schimmelmann](https://nils.schimmelmann.us/post/153541254987/intel-smart-response-technology-vs-windows-10)
+* See [joe's blog](https://joe.blog.freemansoft.com) for any updates
