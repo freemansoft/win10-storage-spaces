@@ -3,6 +3,10 @@ These scripts will create storage pools that integrate SSDs as caching drives an
 * The scripts automatically find all raw drives and add them to the pool.  
 * Some HDDs have their types incorrectly identified.  The script can coerce them to be MediaType:HDD
 * The entire virtual drive is added to the system as a single large volume
+* You need at least 
+  * 1 SSD and 1 HDD to run cached storage / Simple resiliency
+  * 2 SSD and 2 HDD to run cached storage / Mirror resiliency / 
+  * 1 SSD and 2 HDD to run cached storage / Simple resiliency / striped storage (sum of HDD space)
 
 # Scripts 
 ## new-storage-space.ps1

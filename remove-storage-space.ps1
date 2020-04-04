@@ -5,23 +5,41 @@ $HDDTierName = "HDDTier"
 $TieredDiskName = "My Tiered VirtualDisk"
 
 # In reverse order of creation
-Write-Output "Removing drive:"
-Get-VirtualDisk -FriendlyName $TieredDiskName
-Remove-virtualdisk -friendlyName $TieredDiskName -Confirm:$false
+if ((Get-VirtualDisk -FriendlyName $TieredDiskName) -ne $null){
+    Write-Output "Removing drive: $TieredDiskName"
+    Get-VirtualDisk -FriendlyName $TieredDiskName
+    Remove-virtualdisk -friendlyName $TieredDiskName -Confirm:$false
+} else {
+    Write-Output "Drive does not exist: $TieredDiskName"
+}
 
 # Remove Storage Tier
-Write-Output "Removing storage tiers:"
-Get-StorageTier
-Remove-StorageTier -FriendlyName $HDDTierName -Confirm:$false
-Remove-StorageTier -FriendlyName $SSDTierName -Confirm:$false
+if ((Get-StorageTier -FriendlyName $HDDTierName) -ne $null){
+    Write-Output "Removing storage tiers: $HDDTierName"
+    Get-StorageTier -FriendlyName $HDDTierName | FT FriendlyName, MediaType, Size -AutoSize
+    Remove-StorageTier -FriendlyName $HDDTierName -Confirm:$false
+} else {
+    Write-Output "Tier does not exist: $HDDTierName"
+}
+if ((Get-StorageTier -FriendlyName $SSDTierName) -ne $null){
+    Write-Output "Removing storage tiers: $SSDTierName"
+    Get-StorageTier -FriendlyName $SSDTierName | FT FriendlyName, MediaType, Size -AutoSize
+    Remove-StorageTier -FriendlyName $SSDTierName -Confirm:$false
+} else {
+    Write-Output "Tier does not exist: $SSDTierName"
+}
 Get-StorageTier
 
 # Remove the Storage Pool
-Write-Output "Removing storage pool:"
-Get-StoragePool -FriendlyName $StoragePoolName | Get-PhysicalDisk | Select FriendlyName, MediaType
-Remove-StoragePool -FriendlyName $StoragePoolName -Confirm:$false
+if ((Get-StoragePool -FriendlyName $StoragePoolName) -ne $null){
+    Write-Output "Removing storage pool: $StoragePoolName"
+    Get-StoragePool -FriendlyName $StoragePoolName | Get-PhysicalDisk | FT FriendlyName, MediaType
+    Remove-StoragePool -FriendlyName $StoragePoolName -Confirm:$false
+} else {
+    Write-Output "Storage Pool does not exist: $StoragePoolName"
+}
 # Show just the primoridal pool
-Get-StoragePool
+Write-Output "Poolable drives after cleanup"
 Get-StoragePool | Get-PhysicalDisk -CanPool:$True
 
 Write-Output "Operation complete"

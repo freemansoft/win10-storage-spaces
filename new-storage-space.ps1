@@ -7,24 +7,23 @@ $StoragePoolName = "My Storage Pool"
 #Tiers in the storage pool
 $SSDTierName = "SSDTier"
 $HDDTierName = "HDDTier"
-#Simple = striped.  Mirror only works if both can mirror AFIK
-#https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-R2-and-2012/dn387076(v=ws.11)
-# "the number of columns will be identical on both tiers"
-$SSDTierResiliency = "Simple"
-$HDDTierResiliency = "Simple"
-
 #Virtual Disk Name made up of disks in both tiers
 $TieredDiskName = "My Tiered VirtualDisk"
+
+#Simple = striped.  Mirror only works if both can mirror AFIK
+#https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-R2-and-2012/dn387076(v=ws.11)
+$DriveTierResiliency = "Simple"
+
 #Change to suit - drive later and the label name
 $TieredDriveLetter = "Z"
 $TieredDriveLabel = "StorageDrive"
 
-#Comment these out if you want to try autozizng
-#Set values for cache and data storage sizes - cache is size of SSD - storage will be sum of storage disks
+#Override the default sizing here - useful if have two different size SSDs or HDDs - set to smallest of pair
 #These must be Equal or smaller than the disk size available in that tier SSD and HDD
-#$CacheSize = 210GB
-#Size for data drive
-#$StorageSize = 3.6TB
+#SSD:cache  -    HDD:data
+#set to null so copy/paste to command prompt doesn't have previous run values
+$SSDTierSize = $null
+$HDDTierSize = $null
 
 #Uncomment and put your HDD type here if it shows up as unspecified with "Get-PhysicalDisk -CanPool $True
 #    If your HDDs show up as Unspecified instead of HDD
@@ -51,34 +50,36 @@ if ($PhysicalDisks -eq $null){
 #Create a new Storage Pool using the disks in variable $PhysicalDisks with a name of My Storage Pool
 $SubSysName = (Get-StorageSubSystem).FriendlyName
 New-StoragePool -PhysicalDisks $PhysicalDisks -StorageSubSystemFriendlyName $SubSysName -FriendlyName $StoragePoolName
-
 #View the disks in the Storage Pool just created
 Get-StoragePool -FriendlyName $StoragePoolName | Get-PhysicalDisk | Select FriendlyName, MediaType
+
+#Set the number of columns used for each resiliency - This setting assumes you have at least 2-SSD and 2-HDD
+# Get-StoragePool $StoragePoolName | Set-ResiliencySetting -Name Simple -NumberOfColumnsDefault 2
+# Get-StoragePool $StoragePoolName | Set-ResiliencySetting -Name Mirror -NumberOfColumnsDefault 1
 
 #Create two tiers in the Storage Pool created. One for SSD disks and one for HDD disks
 $SSDTier = New-StorageTier -StoragePoolFriendlyName $StoragePoolName -FriendlyName $SSDTierName -MediaType SSD -ResiliencySettingName $SSDTierResiliency
 $HDDTier = New-StorageTier -StoragePoolFriendlyName $StoragePoolName -FriendlyName $HDDTierName -MediaType HDD -ResiliencySettingName $HDDTierResiliency
 
 #Identify tier sizes within this storage pool for auto sizing
-$SSDTierSizes = (Get-StorageTierSupportedSize -FriendlyName $SSDTierName -ResiliencySettingName $SSDTierResiliency).TierSizeMax
-$HDDTierSizes = (Get-StorageTierSupportedSize -FriendlyName $HDDTierName -ResiliencySettingName $HDDTierResiliency).TierSizeMax 
-# need to size down.  this amount worked (!)
-$SSDTierSizes = [int64]($SSDTierSizes * 0.95)
-$HDDTierSizes = [int64]($HDDTierSizes * 0.95)
+#Can override by setting sizes at top
+if ($SSDTierSize -eq $null){
+    $SSDTierSize = (Get-StorageTierSupportedSize -FriendlyName $SSDTierName -ResiliencySettingName $DriveTierResiliency).TierSizeMax
+    $SSDTierSize = [int64]($SSDTierSize * 0.95)
+}
+if ($HDDTierSize -eq $null){
+    $HDDTierSize = (Get-StorageTierSupportedSize -FriendlyName $HDDTierName -ResiliencySettingName $DriveTierResiliency).TierSizeMax 
+    $HDDTierSize = [int64]($HDDTierSize * 0.95)
+}
+Write-Output "TierSizes: ( $SSDTierSize , $HDDTierSize )"
 
-#Autosizing didn't work with my configuration 3/2020
-if ($CacheSize -eq $null) {
-    #Create a new virtual disk in the pool with a name of TieredSpace using the SSD and HDD tiers
-    New-VirtualDisk -StoragePoolFriendlyName $StoragePoolName -FriendlyName $TieredDiskName -StorageTiers @($SSDTier, $HDDTier) -StorageTierSizes @($SSDTierSizes, $HDDTierSizes) -ResiliencySettingName $HDDTierResiliency  -AutoWriteCacheSize -AutoNumberOfColumns
-}
-else { 
-    #Alternatively try adjusting the sizes manually:
-    New-VirtualDisk -StoragePoolFriendlyName $StoragePoolName -FriendlyName $TieredDiskName -StorageTiers @($SSDTier, $HDDTier) -StorageTierSizes @($CacheSize, $StorageSize)  -ResiliencySettingName $HDDTierResiliency -AutoWriteCacheSize -AutoNumberOfColumns
-}
+# you can end up with different number of columns in SSD - Ex: With Simple 1SSD and 2HDD could end up with SSD-1Col, HDD-2Col
+New-VirtualDisk -StoragePoolFriendlyName $StoragePoolName -FriendlyName $TieredDiskName -StorageTiers @($SSDTier, $HDDTier) -StorageTierSizes @($SSDTierSize, $HDDTierSize) -ResiliencySettingName $DriveTierResiliency -AutoWriteCacheSize -AutoNumberOfColumns
 
 # initialize the disk, format and mount as a single volume
 Write-Output "preparing volume"
 Get-VirtualDisk $TieredDiskName | Get-Disk | Initialize-Disk -PartitionStyle GPT
+# This will be Partition 2.  Storage pool metadata is in Partition 1
 Get-VirtualDisk $TieredDiskName | Get-Disk | New-Partition -DriveLetter $TieredDriveLetter -UseMaximumSize
 Initialize-Volume -DriveLetter $TieredDriveLetter -FileSystem NTFS -Confirm:$false -NewFileSystemLabel $TieredDriveLabel
 Get-Volume -DriveLetter $TieredDriveLetter
