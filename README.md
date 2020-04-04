@@ -65,16 +65,30 @@ Sequential 1MiB (Q=  1, T= 1):   154.147 MB/s [    147.0 IOPS]   230.149 MB/s [ 
 
 ```
 
-## Sample state after creating Virtual Drive
+## Example state 
+### Before script
+Three drives can pool.  The HDD drive media types are not recognized
+```
+PS C:\WINDOWS\system32> Get-PhysicalDisk
+Number FriendlyName           SerialNumber         MediaType   CanPool OperationalStatus HealthStatus Usage            Size
+------ ------------           ------------         ---------   ------- ----------------- ------------ -----            ----
+0      SanDisk Ultra II 480GB xxxxxxxxxxxx         SSD         False   OK                Healthy      Auto-Select 447.13 GB
+4      ATA WDC WD20EFRX-68A   WD-xxxxxxxxxxxx      Unspecified True    OK                Healthy      Auto-Select   1.82 TB
+3      ATA WDC WD20EFRX-68A   WD-xxxxxxxxxxxx      Unspecified True    OK                Healthy      Auto-Select   1.82 TB
+1      ATA KINGSTON SH103S3   xxxxxxxxxxxxxxxx     SSD         False   OK                Healthy      Auto-Select 223.57 GB
+2      ATA LITEONIT LCS-256   xxxxxxxxxxxxxxxxxxxx SSD         True    OK                Healthy      Auto-Select 238.47 GB
+```
+
+### After creating Virtual Drive
 ```
 PS C:\WINDOWS\system32> Get-PhysicalDisk
 Number FriendlyName           SerialNumber         MediaType CanPool OperationalStatus HealthStatus Usage            Size
 ------ ------------           ------------         --------- ------- ----------------- ------------ -----            ----
-0      SanDisk Ultra II 480GB 164203A02633         SSD       False   OK                Healthy      Auto-Select 447.13 GB
-4      ATA WDC WD20EFRX-68A   WD-WMC300242040      HDD       False   OK                Healthy      Auto-Select   1.82 TB
-3      ATA WDC WD20EFRX-68A   WD-WMC300242654      HDD       False   OK                Healthy      Auto-Select   1.82 TB
-1      ATA KINGSTON SH103S3   50026B722510FC3F     SSD       False   OK                Healthy      Auto-Select 223.57 GB
-2      ATA LITEONIT LCS-256   TW0XFJWX5508534M3182 SSD       False   OK                Healthy      Auto-Select 238.47 GB
+0      SanDisk Ultra II 480GB xxxxxxxxxxxx         SSD       False   OK                Healthy      Auto-Select 447.13 GB
+4      ATA WDC WD20EFRX-68A   WD-xxxxxxxxxxxx      HDD       False   OK                Healthy      Auto-Select   1.82 TB
+3      ATA WDC WD20EFRX-68A   WD-xxxxxxxxxxxx      HDD       False   OK                Healthy      Auto-Select   1.82 TB
+1      ATA KINGSTON SH103S3   xxxxxxxxxxxxxxxx     SSD       False   OK                Healthy      Auto-Select 223.57 GB
+2      ATA LITEONIT LCS-256   xxxxxxxxxxxxxxxxxxxx SSD       False   OK                Healthy      Auto-Select 238.47 GB
 
 PS C:\WINDOWS\system32> Get-StoragePool
 FriendlyName    OperationalStatus HealthStatus IsPrimordial IsReadOnly    Size AllocatedSize
