@@ -38,7 +38,7 @@ Removes the virtual drive, the storage tiers and then the storage pool.
 ## Win 10 Pro Storage Spaces Control Panel
 The control panel does not display or manipulate tiers
 
-<img src="./images_folder/storage-spaces-control-panel.png" width="500" height="400" />
+<img src="./images_folder/storage-spaces-cp.png" width="500" height="400" />
 
 
 ## Simple vs Mirror
