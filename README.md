@@ -6,7 +6,7 @@ This means Powershell must be used for all configuration.
 
 ![Physical Disks](./images_folder/physical-disks.png)
 
-This repository contains scripts that create tiered storage pools that integrate SSDs as caching drives and HDDs as storage drives. They assume you have at least one SSD and one HDD.
+[This repository](https://github.com/freemansoft/win10-storage-spaces) contains scripts that create tiered storage pools that integrate SSDs as caching drives and HDDs as storage drives. They assume you have at least one SSD and one HDD.
 
 * The scripts automatically find all raw drives and add them to the pool.  
 * Some HDDs have their types incorrectly identified.  The script can coerce them to be MediaType:HDD
@@ -44,12 +44,11 @@ The control panel does not display or manipulate tiers
 <img src="./images_folder/storage-spaces-cp.png" width="500" height="400" />
 
 
-## Simple vs Mirror
+## ResiliancyName: Simple vs Mirror
 The "Mirror" resiliency level attempts to mirror both SSD and HDD tiers so you would need 4 drives run mirror, to mirror both tiers
 
-## Meaningless Benchmark
+## Caching Impact Benchmark
 All Storage Pool drives connected to 3Gb/s SATA.  The write-back cache is not used with sequential writes over 256KB
-
 
 ```
 [Read]                           *Single 2TB no cache*           *Two 2TB mirrored with 200GB cache*
@@ -66,6 +65,36 @@ Sequential 1MiB (Q=  1, T= 1):   154.147 MB/s [    147.0 IOPS]   230.149 MB/s [ 
 
 ```
 
+## Sample state after creating Virtual Drive
+```
+PS C:\WINDOWS\system32> Get-PhysicalDisk
+Number FriendlyName           SerialNumber         MediaType CanPool OperationalStatus HealthStatus Usage            Size
+------ ------------           ------------         --------- ------- ----------------- ------------ -----            ----
+0      SanDisk Ultra II 480GB 164203A02633         SSD       False   OK                Healthy      Auto-Select 447.13 GB
+4      ATA WDC WD20EFRX-68A   WD-WMC300242040      HDD       False   OK                Healthy      Auto-Select   1.82 TB
+3      ATA WDC WD20EFRX-68A   WD-WMC300242654      HDD       False   OK                Healthy      Auto-Select   1.82 TB
+1      ATA KINGSTON SH103S3   50026B722510FC3F     SSD       False   OK                Healthy      Auto-Select 223.57 GB
+2      ATA LITEONIT LCS-256   TW0XFJWX5508534M3182 SSD       False   OK                Healthy      Auto-Select 238.47 GB
+
+PS C:\WINDOWS\system32> Get-StoragePool
+FriendlyName    OperationalStatus HealthStatus IsPrimordial IsReadOnly    Size AllocatedSize
+------------    ----------------- ------------ ------------ ----------    ---- -------------
+Primordial      OK                Healthy      True         False      4.53 TB       3.86 TB
+My Storage Pool OK                Healthy      False        False      3.86 TB       3.66 TB
+
+PS C:\WINDOWS\system32> Get-StorageTier
+FriendlyName                  TierClass   MediaType ResiliencySettingName FaultDomainRedundancy    Size FootprintOnPool StorageEfficiency
+------------                  ---------   --------- --------------------- ---------------------    ---- --------------- -----------------
+SSDTier                       Unknown     SSD       Simple                0                        0 B             0 B
+My Tiered VirtualDisk-HDDTier Capacity    HDD       Simple                0                     3.46 TB         3.46 TB           100.00%
+My Tiered VirtualDisk-SSDTier Performance SSD       Simple                0                      211 GB          211 GB           100.00%
+HDDTier                       Unknown     HDD       Simple                0                        0 B             0 B
+
+PS C:\WINDOWS\system32> Get-VirtualDisk
+FriendlyName          ResiliencySettingName FaultDomainRedundancy OperationalStatus HealthStatus    Size FootprintOnPool StorageEfficiency
+------------          --------------------- --------------------- ----------------- ------------    ---- --------------- -----------------
+My Tiered VirtualDisk                                             OK                Healthy      3.66 TB         3.66 TB            99.97%
+```
 
 # Credits
 * Most of the script came from this great [blog article by Nils Schimmelmann](https://nils.schimmelmann.us/post/153541254987/intel-smart-response-technology-vs-windows-10)
