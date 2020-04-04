@@ -26,13 +26,12 @@ Removes the virtual drive, the storage tiers and then the storage pool.
 * All drives are returned the _Primordial_ pool
 
 # Sample configuration
-_new-storage-space.ps_ took my three Physical Drives
-* two 2TB HDD 
-* one 200GB SSD.  
+*new-storage-space.ps* created a Virtual drive from 3 physical drives
 
-and built a Virtual Drive 
-* single _striped_ 3.6TB data volume 
-* fronted with a 200GB read/write cache.
+| Physical Drives | Storage Space Virtual Drive|
+|-----------------|-----------------------------|
+| two 2TB HDD     | single 3.6TB data volume _striped_ across my two HDD |
+| one 200GB SSD.  | with a 200GB read/write cache |
 
 ![Simple resiliency with striped drives](./images_folder/stripe-simple.png) 
 
