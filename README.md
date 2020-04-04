@@ -1,5 +1,10 @@
 # Create Storage Spaces in Windows 10
-These scripts will create storage pools that integrate SSDs as caching drives and HDDs as storage drives. They assume you have at least one SSD and two HDDs.  
+Windows Server O/S contains Storage Spaces support for fault domains and tiered storage.
+Windows 10 support Storage Spaces with a GUI Control Panel that does not include the tiered storage GUI. 
+
+These scripts create tiered storage pools that integrate SSDs as caching drives and HDDs as storage drives. They assume you have at least one SSD and two HDDs.  
+![Physical Disks](./images_folder/physical-disks.png)
+
 * The scripts automatically find all raw drives and add them to the pool.  
 * Some HDDs have their types incorrectly identified.  The script can coerce them to be MediaType:HDD
 * The entire virtual drive is added to the system as a single large volume
@@ -7,6 +12,8 @@ These scripts will create storage pools that integrate SSDs as caching drives an
   * 1 SSD and 1 HDD to run cached storage / Simple resiliency
   * 2 SSD and 2 HDD to run cached storage / Mirror resiliency / 
   * 1 SSD and 2 HDD to run cached storage / Simple resiliency / striped storage (sum of HDD space)
+
+![Simple](./images_folder/simple.png) ![Mirrored](./images_folder/mirror-simple.png) ![Mirrored and Striped](./images_folder/mirror-stripe.png)
 
 # Scripts 
 ## new-storage-space.ps1
@@ -19,16 +26,24 @@ Removes the virtual drive, the storage tiers and then the storage pool.
 * All drives are returned the _Primordial_ pool
 
 # Sample configuration
-_new-storage-space.ps_ took my three drives
+_new-storage-space.ps_ took my three Physical Drives
 * two 2TB HDD 
 * one 200GB SSD.  
 
-and turned them them into a 
+and built a Virtual Drive 
 * single _striped_ 3.6TB data volume 
 * fronted with a 200GB read/write cache.
 
+![Simple resiliency with striped drives](./images_folder/stripe-simple.png) 
+
+## Win 10 Pro Storage Spaces Control Panel
+The control panel does not display or manipulate tiers
+
+<img src="./images_folder/storage-spaces-control-panel.png" width="500" height="400" />
+
+
 ## Simple vs Mirror
-I believe it attempts to mirror both tiers so you would need 4 drives run mirror, to mirror both tiers
+It attempts to mirror both tiers so you would need 4 drives run mirror, to mirror both tiers
 
 ## Meaningless Benchmark
 All Storage Pool drives connected to 3Gb/s SATA
