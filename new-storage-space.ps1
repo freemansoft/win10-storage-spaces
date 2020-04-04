@@ -24,6 +24,8 @@ $TieredDriveLabel = "StorageDrive"
 #set to null so copy/paste to command prompt doesn't have previous run values
 $SSDTierSize = $null
 $HDDTierSize = $null
+#Drives cannot always be fully allocated - probably broken for drives < 10GB
+$UsableSpace = 0.99
 
 #Uncomment and put your HDD type here if it shows up as unspecified with "Get-PhysicalDisk -CanPool $True
 #    If your HDDs show up as Unspecified instead of HDD
@@ -58,18 +60,18 @@ Get-StoragePool -FriendlyName $StoragePoolName | Get-PhysicalDisk | Select Frien
 # Get-StoragePool $StoragePoolName | Set-ResiliencySetting -Name Mirror -NumberOfColumnsDefault 1
 
 #Create two tiers in the Storage Pool created. One for SSD disks and one for HDD disks
-$SSDTier = New-StorageTier -StoragePoolFriendlyName $StoragePoolName -FriendlyName $SSDTierName -MediaType SSD -ResiliencySettingName $SSDTierResiliency
-$HDDTier = New-StorageTier -StoragePoolFriendlyName $StoragePoolName -FriendlyName $HDDTierName -MediaType HDD -ResiliencySettingName $HDDTierResiliency
+$SSDTier = New-StorageTier -StoragePoolFriendlyName $StoragePoolName -FriendlyName $SSDTierName -MediaType SSD
+$HDDTier = New-StorageTier -StoragePoolFriendlyName $StoragePoolName -FriendlyName $HDDTierName -MediaType HDD
 
-#Identify tier sizes within this storage pool for auto sizing
+#Calculate tier sizes within this storage pool
 #Can override by setting sizes at top
 if ($SSDTierSize -eq $null){
     $SSDTierSize = (Get-StorageTierSupportedSize -FriendlyName $SSDTierName -ResiliencySettingName $DriveTierResiliency).TierSizeMax
-    $SSDTierSize = [int64]($SSDTierSize * 0.95)
+    $SSDTierSize = [int64]($SSDTierSize * $UsableSpace)
 }
 if ($HDDTierSize -eq $null){
     $HDDTierSize = (Get-StorageTierSupportedSize -FriendlyName $HDDTierName -ResiliencySettingName $DriveTierResiliency).TierSizeMax 
-    $HDDTierSize = [int64]($HDDTierSize * 0.95)
+    $HDDTierSize = [int64]($HDDTierSize * $UsableSpace)
 }
 Write-Output "TierSizes: ( $SSDTierSize , $HDDTierSize )"
 
