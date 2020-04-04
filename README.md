@@ -46,7 +46,7 @@ The control panel does not display or manipulate tiers
 It attempts to mirror both tiers so you would need 4 drives run mirror, to mirror both tiers
 
 ## Meaningless Benchmark
-All Storage Pool drives connected to 3Gb/s SATA
+All Storage Pool drives connected to 3Gb/s SATA.  The write-back cache is not used with sequential writes over 256KB
 
 
 ```
