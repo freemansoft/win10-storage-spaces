@@ -1,0 +1,1 @@
+This directory was intended to support creating virtual drives that could be mounted into a VM and appear as if they were phsical disks
