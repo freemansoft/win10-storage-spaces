@@ -4,6 +4,13 @@ $SSDTierName = "SSDTier"
 $HDDTierName = "HDDTier"
 $TieredDiskName = "My Tiered VirtualDisk"
 
+# Make sure they really want to do this!
+$choices  = '&Yes', '&No'
+$decision = $Host.UI.PromptForChoice('Remove Storage Space', 'Are you sure you wish to remove the storage space named "' + $TieredDiskName + '"?' + [Environment]::NewLine + 'ALL DATA WILL BE PERMANENTLY LOST', $choices, 1)
+if ($decision -ne 0) {
+    exit
+}
+
 # In reverse order of creation
 if ((Get-VirtualDisk -FriendlyName $TieredDiskName) -ne $null){
     Write-Output "Removing drive: $TieredDiskName"
