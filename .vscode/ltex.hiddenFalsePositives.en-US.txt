@@ -1,0 +1,4 @@
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QThe script can coerce them to be MediaType:HDD\nThe entire virtual drive is added to the system as a single large volume\nYou need at least\n1 SSD and 1 HDD to run cached storage / Simple resiliency\n2 SSD and 2 HDDs to run cached storage / Mirror resiliency /\n1 SSD and 2 HDDs to run cached storage / Simple resiliency / striped storage (sum of HDD space)\\E$"}
+{"rule":"ENGLISH_WORD_REPEAT_RULE","sentence":"^\\QSimple Mirrored Mirrored and Striped\\E$"}
+{"rule":"MASS_AGREEMENT","sentence":"^\\QThe HDD drive media types are not recognized.\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QCredits\nMost of the script came from this great blog article by Nils Schimmelmann\nSee Joe's blog for any updates\\E$"}

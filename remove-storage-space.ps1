@@ -14,7 +14,7 @@ if ($decision -ne 0) {
 }
 
 # In reverse order of creation
-if ((Get-VirtualDisk -FriendlyName $TieredDiskName) -ne $null){
+if ($null -ne (Get-VirtualDisk -FriendlyName $TieredDiskName)){
     Write-Output "Removing drive: $TieredDiskName"
     Get-VirtualDisk -FriendlyName $TieredDiskName
     Remove-virtualdisk -friendlyName $TieredDiskName -Confirm:$false
@@ -23,16 +23,16 @@ if ((Get-VirtualDisk -FriendlyName $TieredDiskName) -ne $null){
 }
 
 # Remove Storage Tier
-if ((Get-StorageTier -FriendlyName $HDDTierName) -ne $null){
+if ($null -ne (Get-StorageTier -FriendlyName $HDDTierName)){
     Write-Output "Removing storage tiers: $HDDTierName"
-    Get-StorageTier -FriendlyName $HDDTierName | FT FriendlyName, MediaType, Size -AutoSize
+    Get-StorageTier -FriendlyName $HDDTierName | Format-Table FriendlyName, MediaType, Size -AutoSize
     Remove-StorageTier -FriendlyName $HDDTierName -Confirm:$false
 } else {
     Write-Output "Tier does not exist: $HDDTierName"
 }
-if ((Get-StorageTier -FriendlyName $SSDTierName) -ne $null){
+if ($null -ne (Get-StorageTier -FriendlyName $SSDTierName)){
     Write-Output "Removing storage tiers: $SSDTierName"
-    Get-StorageTier -FriendlyName $SSDTierName | FT FriendlyName, MediaType, Size -AutoSize
+    Get-StorageTier -FriendlyName $SSDTierName | Format-Table FriendlyName, MediaType, Size -AutoSize
     Remove-StorageTier -FriendlyName $SSDTierName -Confirm:$false
 } else {
     Write-Output "Tier does not exist: $SSDTierName"
@@ -40,9 +40,9 @@ if ((Get-StorageTier -FriendlyName $SSDTierName) -ne $null){
 Get-StorageTier
 
 # Remove the Storage Pool
-if ((Get-StoragePool -FriendlyName $StoragePoolName) -ne $null){
+if ($null -ne (Get-StoragePool -FriendlyName $StoragePoolName)){
     Write-Output "Removing storage pool: $StoragePoolName"
-    Get-StoragePool -FriendlyName $StoragePoolName | Get-PhysicalDisk | FT FriendlyName, MediaType
+    Get-StoragePool -FriendlyName $StoragePoolName | Get-PhysicalDisk | Format-Table FriendlyName, MediaType
     Remove-StoragePool -FriendlyName $StoragePoolName -Confirm:$false
 } else {
     Write-Output "Storage Pool does not exist: $StoragePoolName"
