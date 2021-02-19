@@ -12,7 +12,7 @@ param (
     $ConfigFile
 )
 
-$StorageSpacesParams = @()
+$Global:StorageSpacesParams = @()
 #Makes $PhysicalDisks a hashtable for easier management.
 $PhysicalDisks = @()
 
@@ -29,7 +29,7 @@ $PhysicalDisks = @()
             
             }
             elseif ($DefaultPrompt.ToUpper() -eq "N") {
-            
+            setDefaultValues
             }
             else {
             Write-Output "Invalid Selection."
@@ -42,18 +42,18 @@ $PhysicalDisks = @()
     }
 
 DefaultPrompt
-function defaults {
+function setDefaultValues {
     $StorageSpacesParams = @{
         #Pool that will suck in all drives
-        StoragePoolName = "My Storage Pool"
+        StoragePoolFriendlyName = "My Storage Pool"
         #Virtual Disk Name made up of disks in both tiers
         TieredDiskName = "My Tiered VirtualDisk"
         #Simple = striped.  Mirror only works if both can mirror AFIK
         #https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-R2-and-2012/dn387076(v=ws.11)
         DriveTierResiliency = "Simple"
         #Change to suit - drive later and the label name
-        TieredDriveLetter  = "Z"
-        TieredDriveLabel   = "StorageDrive"
+        DriveLetter  = "Z"
+        NewFileSystemLabel   = "StorageDrive"
         #Override the default sizing here - useful if have two different size SSDs or HDDs - set to smallest of pair
         #These must be Equal or smaller than the disk size available in that tier SSD and HDD
         #SSD:cache  -    HDD:data
@@ -62,23 +62,27 @@ function defaults {
         HDDTierSize        = $null
         #Drives cannot always be fully allocated - probably broken for drives < 10GB
         UsableSpace        = 0.98 # I had an issue with 0.99, so I lowered it to 0.98.
+        #Tiers in the storage pool
+        SSDTierName        = "SSDTier"
+        HDDTierName        = "HDDTier"
     }
+}
+    function loadValuesFromParamsToVaribles {
+
+    }
+        
+    
 
     #TODO: Set selectable $DriveTierResiliency.
 
     #TODO: Write defauls to config file for injestion for script use.
-}
+
     #TODO: Add prompt to load global variable defaults.
 
     #TODO: Make interactive prompt for global varibles set to $null.
 
-
-
-#Tiers in the storage pool
-$SSDTierName = "SSDTier"
-$HDDTierName = "HDDTier"
-
     #TODO: Covert $UseUnspecifiedDriveIsHDD to a default varible option.
+
 #Uncomment and put your HDD type here if it shows up as unspecified with "Get-PhysicalDisk -CanPool $True
 #    If your HDDs show up as Unspecified instead of HDD
 $UseUnspecifiedDriveIsHDD = "$True"
@@ -113,8 +117,8 @@ Get-StoragePool -FriendlyName $StoragePoolName | Get-PhysicalDisk | Select-Objec
 # Get-StoragePool $StoragePoolName | Set-ResiliencySetting -Name Mirror -NumberOfColumnsDefault 1
 
 #Create two tiers in the Storage Pool created. One for SSD disks and one for HDD disks
-$SSDTier = New-StorageTier -StoragePoolFriendlyName $StoragePoolName -FriendlyName $SSDTierName -MediaType SSD
-$HDDTier = New-StorageTier -StoragePoolFriendlyName $StoragePoolName -FriendlyName $HDDTierName -MediaType HDD
+$SSDTier = New-StorageTier @StorageSpacesParams -FriendlyName $SSDTierName -MediaType SSD
+$HDDTier = New-StorageTier @StorageSpacesParams -FriendlyName $HDDTierName -MediaType HDD
 
 #Calculate tier sizes within this storage pool
 #Can override by setting sizes at top
@@ -129,14 +133,16 @@ if ($null -eq $HDDTierSize){
 Write-Output "TierSizes: ( $SSDTierSize , $HDDTierSize )"
 
 # you can end up with different number of columns in SSD - Ex: With Simple 1SSD and 2HDD could end up with SSD-1Col, HDD-2Col
-New-VirtualDisk -StoragePoolFriendlyName $StoragePoolName -FriendlyName $TieredDiskName -StorageTiers @($SSDTier, $HDDTier) -StorageTierSizes @($SSDTierSize, $HDDTierSize) -ResiliencySettingName $DriveTierResiliency -AutoWriteCacheSize -AutoNumberOfColumns
+New-VirtualDisk @StorageSpacesParams -FriendlyName $TieredDiskName -StorageTiers @($SSDTier, $HDDTier) -StorageTierSizes @($SSDTierSize, $HDDTierSize) @StorageSpacesParams -AutoWriteCacheSize -AutoNumberOfColumns
 
 # initialize the disk, format and mount as a single volume
 Write-Output "Preparing volume..."
 Get-VirtualDisk $TieredDiskName | Get-Disk | Initialize-Disk -PartitionStyle GPT
 # This will be Partition 2.  Storage pool metadata is in Partition 1
-Get-VirtualDisk $TieredDiskName | Get-Disk | New-Partition -DriveLetter $TieredDriveLetter -UseMaximumSize
-Initialize-Volume -DriveLetter $TieredDriveLetter -FileSystem NTFS -Confirm:$false -NewFileSystemLabel $TieredDriveLabel
-Get-Volume -DriveLetter $TieredDriveLetter
+Get-VirtualDisk $TieredDiskName | Get-Disk | New-Partition @StorageSpacesParams -UseMaximumSize
+Initialize-Volume -FileSystem NTFS -Confirm:$false @StorageSpacesParams
+Get-Volume @StorageSpacesParams
 
 Write-Output "Operation complete"
+
+Clear-Variable StorageSpacesParams -Scope Global

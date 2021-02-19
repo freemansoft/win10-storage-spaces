@@ -1,32 +1,39 @@
 {
     "StorageSpace":[
         {
-            "StoragePoolName" : ""
+            "StoragePoolFriendlyName" : ""
         },
         {
             "TieredDiskName": ""
         },
-        
         {
-            "DriveTierResiliency": ""
+            "ResiliencySettingName": ""
         },
         {
-            "TieredDriveLetter": ""
+            "DriveLetter": ""
         },
         {
-            "TieredDriveLabel": ""
+            "NewFileSystemLabel": ""
         },
         {
-            "SSDTierSize": ""
+            "SSDTierSize": "$null"
         },
         {
-            "HDDTierSize": ""
+            "HDDTierSize": "$null"
         },
         {
-            "UsableSpace": ""
+            "UsableSpace": "0.98"
         },
         {
-            "UseUnspecifiedDriveIsHDD": "True"
+            "UseUnspecifiedDriveIsHDD": "$True"
+        },
+        {
+            "SSDTierName": "SSDTier"
+        },
+        {
+            "HDDTierName": "HDDTier"
         }
+        
+
 ]
 }
