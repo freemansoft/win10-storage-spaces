@@ -1,4 +1,4 @@
-# Create Storage Spaces in Windows 10
+# Create Tiered Storage Spaces in Windows 10
 Windows Server O/S contains Storage Spaces support for Server Spaces tiered storage. 
 You can front slower spinning disks with smaller faster SSDs. 
 Windows 10 has a Storage Spaces GUI Control Panel that does not include the tiered storage GUI. 
@@ -19,12 +19,12 @@ This means PowerShell must be used for all configuration.
 ![Simple](./images_folder/simple.png) ![Mirrored](./images_folder/mirror-simple.png) ![Mirrored and Striped](./images_folder/mirror-stripe.png)
 
 # Scripts 
-## new-storage-space.ps1
+## New-TiredStorageSpace.ps1
 Creates a tiered storage pool and allocates all the disk space to a single drive
 * You can change the drive letter and label by editing the variables at the top.
 * The script can auto size the drive and cache.  That didn't work for me, so the script supports manual sizing.
 
-## remove-storage-space.ps1
+## Remove-TiredStorageSpace.ps1
 Removes the virtual drive, the storage tiers and then the storage pool.
 * All drives are returned the _Primordial_ pool.
 
