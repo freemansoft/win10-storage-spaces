@@ -24,7 +24,7 @@ Creates a tiered storage pool and allocates all the disk space to a single drive
 * You can change the drive letter and label by editing the variables at the top.
 * The script can auto size the drive and cache.  That didn't work for me, so the script supports manual sizing.
 
-## remove-storage-space
+## remove-storage-space.ps1
 Removes the virtual drive, the storage tiers and then the storage pool.
 * All drives are returned the _Primordial_ pool.
 
