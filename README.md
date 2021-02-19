@@ -19,12 +19,12 @@ This means PowerShell must be used for all configuration.
 ![Simple](./images_folder/simple.png) ![Mirrored](./images_folder/mirror-simple.png) ![Mirrored and Striped](./images_folder/mirror-stripe.png)
 
 # Scripts 
-## New-TiredStorageSpace.ps1
+## New-TieredStorageSpace.ps1
 Creates a tiered storage pool and allocates all the disk space to a single drive
 * You can change the drive letter and label by editing the variables at the top.
 * The script can auto size the drive and cache.  That didn't work for me, so the script supports manual sizing.
 
-## Remove-TiredStorageSpace.ps1
+## Remove-TieredStorageSpace.ps1
 Removes the virtual drive, the storage tiers and then the storage pool.
 * All drives are returned the _Primordial_ pool.
 

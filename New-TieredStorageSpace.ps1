@@ -3,54 +3,85 @@
 #Tested with one SSD and two HDD
 #Requires -RunAsAdministrator
 
+
+
+[CmdletBinding()]
+param (
+    [Parameter()]
+    [string[]]
+    $ConfigFile
+)
+
+$StorageSpacesParams = @()
+#Makes $PhysicalDisks a hashtable for easier management.
+$PhysicalDisks = @()
+
     #TODO: Allow a config file ingestion for varibles. Maybe use json?
 
     #TODO: Set default variables to null and make the global. 
 
     #TODO: Write a pester test.
-function defaults {
-#Pool that will suck in all drives
-$StoragePoolName = "My Storage Pool"
 
-#Virtual Disk Name made up of disks in both tiers
-$TieredDiskName = "My Tiered VirtualDisk"
+    function DefaultPrompt {
+        if ($null -eq $ConfigFile) {
+            $DefaultPrompt = Read-Host = "Would you like to load the default values to the config file? (Y/N)" 
+            if ($DefaultPrompt.ToUpper() -eq "Y" ) {
+            
+            }
+            elseif ($DefaultPrompt.ToUpper() -eq "N") {
+            
+            }
+            else {
+            Write-Output "Invalid Selection."
+            DefaultPrompt
+            }
+        }
+        if ($null -ne $ConfigFile) {
+            
+        }
+    }
+
+DefaultPrompt
+function defaults {
+    $StorageSpacesParams = @{
+        #Pool that will suck in all drives
+        StoragePoolName = "My Storage Pool"
+        #Virtual Disk Name made up of disks in both tiers
+        TieredDiskName = "My Tiered VirtualDisk"
+        #Simple = striped.  Mirror only works if both can mirror AFIK
+        #https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-R2-and-2012/dn387076(v=ws.11)
+        DriveTierResiliency = "Simple"
+        #Change to suit - drive later and the label name
+        TieredDriveLetter  = "Z"
+        TieredDriveLabel   = "StorageDrive"
+        #Override the default sizing here - useful if have two different size SSDs or HDDs - set to smallest of pair
+        #These must be Equal or smaller than the disk size available in that tier SSD and HDD
+        #SSD:cache  -    HDD:data
+        #set to null so copy/paste to command prompt doesn't have previous run values
+        SSDTierSize        = $null
+        HDDTierSize        = $null
+        #Drives cannot always be fully allocated - probably broken for drives < 10GB
+        UsableSpace        = 0.98 # I had an issue with 0.99, so I lowered it to 0.98.
+    }
 
     #TODO: Set selectable $DriveTierResiliency.
-#Simple = striped.  Mirror only works if both can mirror AFIK
-#https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-R2-and-2012/dn387076(v=ws.11)
-$DriveTierResiliency = "Simple"
 
-#Change to suit - drive later and the label name
-$TieredDriveLetter = "Z"
-$TieredDriveLabel = "StorageDrive"
-
-#Override the default sizing here - useful if have two different size SSDs or HDDs - set to smallest of pair
-#These must be Equal or smaller than the disk size available in that tier SSD and HDD
-#SSD:cache  -    HDD:data
-#set to null so copy/paste to command prompt doesn't have previous run values
-$SSDTierSize = $null
-$HDDTierSize = $null
-#Drives cannot always be fully allocated - probably broken for drives < 10GB
-$UsableSpace = 0.98 # I had an issue with 0.99, so I lowered it to 0.98.
     #TODO: Write defauls to config file for injestion for script use.
 }
     #TODO: Add prompt to load global variable defaults.
 
     #TODO: Make interactive prompt for global varibles set to $null.
 
-#Makes $PhysicalDisks an array for easier management.
-$PhysicalDisks = @()
+
 
 #Tiers in the storage pool
 $SSDTierName = "SSDTier"
 $HDDTierName = "HDDTier"
 
-defaults
-
     #TODO: Covert $UseUnspecifiedDriveIsHDD to a default varible option.
 #Uncomment and put your HDD type here if it shows up as unspecified with "Get-PhysicalDisk -CanPool $True
 #    If your HDDs show up as Unspecified instead of HDD
-$UseUnspecifiedDriveIsHDD = "Yes"
+$UseUnspecifiedDriveIsHDD = "$True"
 
 #List all disks that can be pooled and output in table format (format-table)
 Get-PhysicalDisk -CanPool $True | Format-Table FriendlyName, OperationalStatus, Size, MediaType

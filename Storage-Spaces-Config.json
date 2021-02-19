@@ -1,0 +1,32 @@
+{
+    "StorageSpace":[
+        {
+            "StoragePoolName" : ""
+        },
+        {
+            "TieredDiskName": ""
+        },
+        
+        {
+            "DriveTierResiliency": ""
+        },
+        {
+            "TieredDriveLetter": ""
+        },
+        {
+            "TieredDriveLabel": ""
+        },
+        {
+            "SSDTierSize": ""
+        },
+        {
+            "HDDTierSize": ""
+        },
+        {
+            "UsableSpace": ""
+        },
+        {
+            "UseUnspecifiedDriveIsHDD": "True"
+        }
+]
+}
