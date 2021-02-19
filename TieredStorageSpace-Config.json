@@ -1,19 +1,19 @@
 {
     "StorageSpace":[
         {
-            "StoragePoolFriendlyName" : ""
+            "StoragePoolFriendlyName" : "My Storage Pool"
         },
         {
-            "TieredDiskName": ""
+            "TieredDiskName": "My Tiered VirtualDisk"
         },
         {
-            "ResiliencySettingName": ""
+            "ResiliencySettingName": "Simple"
         },
         {
-            "DriveLetter": ""
+            "DriveLetter": "Z"
         },
         {
-            "NewFileSystemLabel": ""
+            "NewFileSystemLabel": "StorageDrive"
         },
         {
             "SSDTierSize": "$null"
