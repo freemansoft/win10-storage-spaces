@@ -1,15 +1,21 @@
 # RUN AS ADMINISTRATOR
 # https://nils.schimmelmann.us/post/153541254987/intel-smart-response-technology-vs-windows-10
 #Tested with one SSD and two HDD
-#
+#Requires -RunAsAdministrator
+
+    #TODO: Allow a config file ingestion for varibles. Maybe use json?
+
+    #TODO: Set default variables to null and make the global. 
+
+    #TODO: Write a pester test.
+function defaults {
 #Pool that will suck in all drives
 $StoragePoolName = "My Storage Pool"
-#Tiers in the storage pool
-$SSDTierName = "SSDTier"
-$HDDTierName = "HDDTier"
+
 #Virtual Disk Name made up of disks in both tiers
 $TieredDiskName = "My Tiered VirtualDisk"
 
+    #TODO: Set selectable $DriveTierResiliency.
 #Simple = striped.  Mirror only works if both can mirror AFIK
 #https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-R2-and-2012/dn387076(v=ws.11)
 $DriveTierResiliency = "Simple"
@@ -25,27 +31,43 @@ $TieredDriveLabel = "StorageDrive"
 $SSDTierSize = $null
 $HDDTierSize = $null
 #Drives cannot always be fully allocated - probably broken for drives < 10GB
-$UsableSpace = 0.99
+$UsableSpace = 0.98 # I had an issue with 0.99, so I lowered it to 0.98.
+    #TODO: Write defauls to config file for injestion for script use.
+}
+    #TODO: Add prompt to load global variable defaults.
 
+    #TODO: Make interactive prompt for global varibles set to $null.
+
+#Makes $PhysicalDisks an array for easier management.
+$PhysicalDisks = @()
+
+#Tiers in the storage pool
+$SSDTierName = "SSDTier"
+$HDDTierName = "HDDTier"
+
+defaults
+
+    #TODO: Covert $UseUnspecifiedDriveIsHDD to a default varible option.
 #Uncomment and put your HDD type here if it shows up as unspecified with "Get-PhysicalDisk -CanPool $True
 #    If your HDDs show up as Unspecified instead of HDD
 $UseUnspecifiedDriveIsHDD = "Yes"
 
 #List all disks that can be pooled and output in table format (format-table)
-Get-PhysicalDisk -CanPool $True | ft FriendlyName, OperationalStatus, Size, MediaType
+Get-PhysicalDisk -CanPool $True | Format-Table FriendlyName, OperationalStatus, Size, MediaType
 
+
+    #TODO: Create selectable options to fine tune what disks are selected.
 #Store all physical disks that can be pooled into a variable, $PhysicalDisks
 #    This assumes you want all raw / unpartitioned disks to end up in your pool - 
 #    Add a clause like the example with your drive name to stop that drive from being included
 #    Example  " | Where FriendlyName -NE "ATA LITEONIT LCS-256"
 if ($UseUnspecifiedDriveIsHDD -ne $null){
-    $DisksToChange = (Get-PhysicalDisk -CanPool $True | where MediaType -eq Unspecified)
-    Get-PhysicalDisk -CanPool $True | where MediaType -eq Unspecified | Set-PhysicalDisk -MediaType HDD
+    Get-PhysicalDisk -CanPool $True | Where-Object MediaType -eq Unspecified | Set-PhysicalDisk -MediaType HDD
     # show the type changed
-    Get-PhysicalDisk -CanPool $True | ft FriendlyName, OperationalStatus, Size, MediaType
+    Get-PhysicalDisk -CanPool $True | Format-Table FriendlyName, OperationalStatus, Size, MediaType
 }
-$PhysicalDisks = (Get-PhysicalDisk -CanPool $True | Where MediaType -NE UnSpecified)
-if ($PhysicalDisks -eq $null){
+$PhysicalDisks = (Get-PhysicalDisk -CanPool $True | Where-Object MediaType -NE UnSpecified)
+if ($null -eq $PhysicalDisks){
     throw "Abort! No physical Disks available"
 }       
 
@@ -53,7 +75,7 @@ if ($PhysicalDisks -eq $null){
 $SubSysName = (Get-StorageSubSystem).FriendlyName
 New-StoragePool -PhysicalDisks $PhysicalDisks -StorageSubSystemFriendlyName $SubSysName -FriendlyName $StoragePoolName
 #View the disks in the Storage Pool just created
-Get-StoragePool -FriendlyName $StoragePoolName | Get-PhysicalDisk | Select FriendlyName, MediaType
+Get-StoragePool -FriendlyName $StoragePoolName | Get-PhysicalDisk | Select-Object FriendlyName, MediaType
 
 #Set the number of columns used for each resiliency - This setting assumes you have at least 2-SSD and 2-HDD
 # Get-StoragePool $StoragePoolName | Set-ResiliencySetting -Name Simple -NumberOfColumnsDefault 2
@@ -65,11 +87,11 @@ $HDDTier = New-StorageTier -StoragePoolFriendlyName $StoragePoolName -FriendlyNa
 
 #Calculate tier sizes within this storage pool
 #Can override by setting sizes at top
-if ($SSDTierSize -eq $null){
+if ($null -eq $SSDTierSize){
     $SSDTierSize = (Get-StorageTierSupportedSize -FriendlyName $SSDTierName -ResiliencySettingName $DriveTierResiliency).TierSizeMax
     $SSDTierSize = [int64]($SSDTierSize * $UsableSpace)
 }
-if ($HDDTierSize -eq $null){
+if ($null -eq $HDDTierSize){
     $HDDTierSize = (Get-StorageTierSupportedSize -FriendlyName $HDDTierName -ResiliencySettingName $DriveTierResiliency).TierSizeMax 
     $HDDTierSize = [int64]($HDDTierSize * $UsableSpace)
 }
@@ -79,7 +101,7 @@ Write-Output "TierSizes: ( $SSDTierSize , $HDDTierSize )"
 New-VirtualDisk -StoragePoolFriendlyName $StoragePoolName -FriendlyName $TieredDiskName -StorageTiers @($SSDTier, $HDDTier) -StorageTierSizes @($SSDTierSize, $HDDTierSize) -ResiliencySettingName $DriveTierResiliency -AutoWriteCacheSize -AutoNumberOfColumns
 
 # initialize the disk, format and mount as a single volume
-Write-Output "preparing volume"
+Write-Output "Preparing volume..."
 Get-VirtualDisk $TieredDiskName | Get-Disk | Initialize-Disk -PartitionStyle GPT
 # This will be Partition 2.  Storage pool metadata is in Partition 1
 Get-VirtualDisk $TieredDiskName | Get-Disk | New-Partition -DriveLetter $TieredDriveLetter -UseMaximumSize

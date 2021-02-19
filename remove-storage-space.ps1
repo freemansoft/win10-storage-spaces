@@ -4,6 +4,8 @@ $SSDTierName = "SSDTier"
 $HDDTierName = "HDDTier"
 $TieredDiskName = "My Tiered VirtualDisk"
 
+#TODO: Config file ingestion.
+
 # Make sure they really want to do this!
 $choices  = '&Yes', '&No'
 $decision = $Host.UI.PromptForChoice('Remove Storage Space', 'Are you sure you wish to remove the storage space named "' + $TieredDiskName + '"?' + [Environment]::NewLine + 'ALL DATA WILL BE PERMANENTLY LOST', $choices, 1)
