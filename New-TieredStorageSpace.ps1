@@ -13,32 +13,50 @@ param (
 )
 
 Begin{
-
+    #Initilize Variables
     $Script:StorageSpacesParams = @()
     #Makes $PhysicalDisks a hashtable for easier management.
     $PhysicalDisks = @()
+    $Script:TieredDiskName
+    
 
     function defaultPrompt {
         if ($null -eq $ConfigFile) {
             $DefaultPrompt = Read-Host = "Would you like to load the default values to the config file? (Y/N)" 
+            
             if ($DefaultPrompt.ToUpper() -eq "Y" ) {
                 $Script:StorageSpacesParams = setDefaultValues
                 $Script:StorageSpacesParams | ConvertTo-Json | Out-File $PSScriptRoot + "\TieredStorageSpace-Config.json"
             }
             elseif ($DefaultPrompt.ToUpper() -eq "N") {
-            
+                Read-Host "Ether pass the config file to the script or use default values. Exiting..."
+                Exit
             }
             else {
-                Write-Output "Invalid Selection."
+                Write-Output "Invalid Selection. Try Again."
                 defaultPrompt
             }
         }
         if ($null -ne $ConfigFile) {
+            #This will load all values from the $ConfigFile var to $Script:StorageSpacesParams.
+            $PSversion = $PSVersionTable.PSVersion.Major
+            if ($PSversion -le "5") {
+                $ConfigObj = $ConfigFile | ConvertFrom-Json
+                    foreach ($obj in ($ConfigObj.StorageSpace | Get-Member * -MemberType NoteProperty).Name) {
+                    $Script:StorageSpacesParams =+ $($ConfigObj.StorageSpace.$obj)
+                }
+                
+            }
+            elseif ($PSversion -ge "6") {
+                $Script:StorageSpacesParams = $ConfigFile | ConvertFrom-Json -AsHashtable
+            }
+            else {
+                Read-Host "Invalid PS Version. Exiting..."
+                Exit
+            } 
             
         }
     }
-
-    defaultPrompt
     function setDefaultValues {
         @{
             #Pool that will suck in all drives
@@ -67,32 +85,27 @@ Begin{
             UseUnspecifiedDriveIsHDD = "$True"
         }
     }
-    function loadValuesFromParamsToVaribles {
+    function loadValuesFromParamsToVariables {
         [CmdletBinding()]
         param (
             [Parameter()]
-            $StorageSpacesParams
+            [TypeName]
+            $ParameterName
         )
 
+        $Script:StorageSpacesParams
+
     }
+
+    defaultPrompt
+    loadValuesFromParamsToVariables
 }
 
     #TODO: Allow a config file ingestion for varibles.
 
+    #TODO: Write a pester test.    
 
-    #TODO: Write a pester test.
-
- 
-        
-    
-
-    #TODO: Set selectable $DriveTierResiliency.
-
-    #TODO: Write defauls to config file for injestion for script use.
-
-    #TODO: Add prompt to load global variable defaults.
-
-    #TODO: Make interactive prompt for global varibles set to $null.
+    #TODO: Write defaults to config file for ingestion for script use.
 
 Process {
     #List all disks that can be pooled and output in table format (format-table)
@@ -100,6 +113,7 @@ Process {
 
 
     #TODO: Create selectable options to fine tune what disks are selected.
+
     #Store all physical disks that can be pooled into a variable, $PhysicalDisks
     #    This assumes you want all raw / unpartitioned disks to end up in your pool - 
     #    Add a clause like the example with your drive name to stop that drive from being included
