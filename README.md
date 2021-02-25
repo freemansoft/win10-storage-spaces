@@ -1,3 +1,6 @@
+
+<!--TODO: Update README documrntaion to match new scripts usage. /--->
+
 # Create Tiered Storage Spaces in Windows 10
 Windows Server O/S contains Storage Spaces support for Server Spaces tiered storage. 
 You can front slower spinning disks with smaller faster SSDs. 

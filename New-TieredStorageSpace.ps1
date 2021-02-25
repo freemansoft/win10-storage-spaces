@@ -3,8 +3,6 @@
 #Tested with one SSD and two HDD
 #Requires -RunAsAdministrator
 
-
-
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $False, ValueFromPipeline = $True)]
@@ -101,11 +99,7 @@ Begin{
     loadValuesFromParamsToVariables
 }
 
-    #TODO: Allow a config file ingestion for varibles.
-
     #TODO: Write a pester test.    
-
-    #TODO: Write defaults to config file for ingestion for script use.
 
 Process {
     #List all disks that can be pooled and output in table format (format-table)
@@ -167,7 +161,7 @@ Process {
 }
 
 End{
-Write-Output "Operation complete"
+Write-Output "Operation complete."
 
-Clear-Variable StorageSpacesParams -Scope Global
+Clear-Variable StorageSpacesParams -Scope Script
 }
