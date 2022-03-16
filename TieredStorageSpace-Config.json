@@ -1,0 +1,37 @@
+{
+    "StorageSpace":[
+        {
+            "StoragePoolFriendlyName" : "My Storage Pool"
+        },
+        {
+            "TieredDiskName": "My Tiered VirtualDisk"
+        },
+        {
+            "ResiliencySettingName": "Simple"
+        },
+        {
+            "DriveLetter": "Z"
+        },
+        {
+            "NewFileSystemLabel": "StorageDrive"
+        },
+        {
+            "SSDTierSize": "$null"
+        },
+        {
+            "HDDTierSize": "$null"
+        },
+        {
+            "UsableSpace": "0.98"
+        },
+        {
+            "UseUnspecifiedDriveIsHDD": "$True"
+        },
+        {
+            "SSDTierName": "SSDTier"
+        },
+        {
+            "HDDTierName": "HDDTier"
+        }
+    ]
+}

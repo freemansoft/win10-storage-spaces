@@ -1,8 +1,11 @@
-# Create Storage Spaces in Windows 10
+
+<!--TODO: Update README documrntaion to match new scripts usage. /--->
+
+# Create Tiered Storage Spaces in Windows 10
 Windows Server O/S contains Storage Spaces support for Server Spaces tiered storage. 
 You can front slower spinning disks with smaller faster SSDs. 
 Windows 10 has a Storage Spaces GUI Control Panel that does not include the tiered storage GUI. 
-This means Powershell must be used for all configuration.
+This means PowerShell must be used for all configuration.
 
 ![Physical Disks](./images_folder/physical-disks.png)
 
@@ -13,28 +16,28 @@ This means Powershell must be used for all configuration.
 * The entire virtual drive is added to the system as a single large volume
 * You need at least 
   * 1 SSD and 1 HDD to run cached storage / Simple resiliency
-  * 2 SSD and 2 HDD to run cached storage / Mirror resiliency / 
-  * 1 SSD and 2 HDD to run cached storage / Simple resiliency / striped storage (sum of HDD space)
+  * 2 SSD and 2 HDDs to run cached storage / Mirror resiliency / 
+  * 1 SSD and 2 HDDs to run cached storage / Simple resiliency / striped storage (sum of HDD space)
 
 ![Simple](./images_folder/simple.png) ![Mirrored](./images_folder/mirror-simple.png) ![Mirrored and Striped](./images_folder/mirror-stripe.png)
 
 # Scripts 
-## new-storage-space.ps1
+## New-TieredStorageSpace.ps1
 Creates a tiered storage pool and allocates all the disk space to a single drive
 * You can change the drive letter and label by editing the variables at the top.
-* the script can auto size the drive and cache.  That didn't work for me so the script supports manual sizing.
+* The script can auto size the drive and cache.  That didn't work for me, so the script supports manual sizing.
 
-## remove-storage-space
+## Remove-TieredStorageSpace.ps1
 Removes the virtual drive, the storage tiers and then the storage pool.
-* All drives are returned the _Primordial_ pool
+* All drives are returned the _Primordial_ pool.
 
 # Sample configuration
 *new-storage-space.ps* created a Virtual drive from 3 physical drives
 
 | Physical Drives | Storage Space Virtual Drive|
 |-----------------|-----------------------------|
-| two 2TB HDD     | single 3.6TB data volume _striped_ across my two HDD |
-| one 200GB SSD.  | with a 200GB read/write cache |
+| Two 2 TB HDD     | Single 3.6 TB data volume _striped_ across my two HDD |
+| One 200 GB SSD.  | With a 200 GB read/write cache. |
 
 ![Simple resiliency with striped drives](./images_folder/stripe-simple.png) 
 
@@ -45,10 +48,10 @@ The control panel does not display or manipulate tiers
 
 
 ## ResiliancyName: Simple vs Mirror
-The "Mirror" resiliency level attempts to mirror both SSD and HDD tiers so you would need 4 drives run mirror, to mirror both tiers
+The “Mirror” resiliency level attempts to mirror both SSD and HDD tiers, so you would need 4 drives run mirror, to mirror both tiers
 
 ## Caching Impact Benchmark
-All Storage Pool drives connected to 3Gb/s SATA.  The write-back cache is not used with sequential writes over 256KB
+All Storage Pool drives connected to 3Gb/s SATA.  The write-back cache is not used with sequential writes over 256 KB.
 
 ```
 [Read]                           *Single 2TB no cache*           *Two 2TB mirrored with 200GB cache*
@@ -67,7 +70,7 @@ Sequential 1MiB (Q=  1, T= 1):   154.147 MB/s [    147.0 IOPS]   230.149 MB/s [ 
 
 ## Example state 
 ### Before script
-Three drives can pool.  The HDD drive media types are not recognized
+Three drives can pool.  The HDD drive media types are not recognized.
 ```
 PS C:\WINDOWS\system32> Get-PhysicalDisk
 Number FriendlyName           SerialNumber         MediaType   CanPool OperationalStatus HealthStatus Usage            Size
@@ -112,4 +115,4 @@ My Tiered VirtualDisk                                             OK            
 
 # Credits
 * Most of the script came from this great [blog article by Nils Schimmelmann](https://nils.schimmelmann.us/post/153541254987/intel-smart-response-technology-vs-windows-10)
-* See [joe's blog](https://joe.blog.freemansoft.com) for any updates
+* See [Joe's blog](https://joe.blog.freemansoft.com) for any updates
