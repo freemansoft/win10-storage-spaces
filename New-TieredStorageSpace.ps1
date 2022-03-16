@@ -11,7 +11,7 @@ param (
 )
 
 Begin{
-    #Initilize Variables
+    #Initialize Variables
     $Script:StorageSpacesParams = @()
     #Makes $PhysicalDisks a hashtable for easier management.
     $PhysicalDisks = @()
