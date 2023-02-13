@@ -3,20 +3,28 @@
 #Tested with one SSD and two HDD
 #
 #Pool that will suck in all drives
-$StoragePoolName = "My Storage Pool"
+$StoragePoolName = "bigpool"
 #Tiers in the storage pool
 $SSDTierName = "SSDTier"
 $HDDTierName = "HDDTier"
 #Virtual Disk Name made up of disks in both tiers
-$TieredDiskName = "My Tiered VirtualDisk"
+$TieredDiskName = "Tiered VirtualDisk"
+
+
+# Optimizaion taken from https://wasteofserver.com/storage-spaces-with-parity-very-slow-writes-solved/amp/
+# Filesystem AllocationUnit Size = Interleave * (Columns - 1)
+#$NumberOfColumns = "6"  -- 6 isn't a good number, so I can break out the tiers and use 3 in each or just use Auto.  Auto doesn't seem to let me mess with the Interleave
+$InterleaveBytes = "16384"
+$FilesystemAllocationUnitSize = "131072"
+
 
 #Simple = striped.  Mirror only works if both can mirror AFIK
 #https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-R2-and-2012/dn387076(v=ws.11)
 $DriveTierResiliency = "Simple"
 
 #Change to suit - drive later and the label name
-$TieredDriveLetter = "Z"
-$TieredDriveLabel = "StorageDrive"
+$TieredDriveLetter = "E"
+$TieredDriveLabel = "BigDrive"
 
 #Override the default sizing here - useful if have two different size SSDs or HDDs - set to smallest of pair
 #These must be Equal or smaller than the disk size available in that tier SSD and HDD
@@ -29,7 +37,7 @@ $UsableSpace = 0.99
 
 #Uncomment and put your HDD type here if it shows up as unspecified with "Get-PhysicalDisk -CanPool $True
 #    If your HDDs show up as Unspecified instead of HDD
-$UseUnspecifiedDriveIsHDD = "Yes"
+#$UseUnspecifiedDriveIsHDD = "Yes"
 
 #List all disks that can be pooled and output in table format (format-table)
 Get-PhysicalDisk -CanPool $True | ft FriendlyName, OperationalStatus, Size, MediaType
@@ -60,8 +68,10 @@ Get-StoragePool -FriendlyName $StoragePoolName | Get-PhysicalDisk | Select Frien
 # Get-StoragePool $StoragePoolName | Set-ResiliencySetting -Name Mirror -NumberOfColumnsDefault 1
 
 #Create two tiers in the Storage Pool created. One for SSD disks and one for HDD disks
-$SSDTier = New-StorageTier -StoragePoolFriendlyName $StoragePoolName -FriendlyName $SSDTierName -MediaType SSD
-$HDDTier = New-StorageTier -StoragePoolFriendlyName $StoragePoolName -FriendlyName $HDDTierName -MediaType HDD
+# SSD interleave - testing with Filesystem Allocation Unit Size
+$SSDTier = New-StorageTier -StoragePoolFriendlyName $StoragePoolName -FriendlyName $SSDTierName -MediaType SSD -Interleave $FilesystemAllocationUnitSize
+$HDDTier = New-StorageTier -StoragePoolFriendlyName $StoragePoolName -FriendlyName $HDDTierName -MediaType HDD -Interleave $InterleaveBytes
+#$HDDTier = New-StorageTier -StoragePoolFriendlyName $StoragePoolName -FriendlyName $HDDTierName -MediaType HDD -Interleave $InterleaveBytes -NumberOfColumns $NumberOfColumns
 
 #Calculate tier sizes within this storage pool
 #Can override by setting sizes at top
@@ -75,15 +85,21 @@ if ($HDDTierSize -eq $null){
 }
 Write-Output "TierSizes: ( $SSDTierSize , $HDDTierSize )"
 
+# pulled from https://wasteofserver.com/storage-spaces-with-parity-very-slow-writes-solved/amp/
+#New-VirtualDisk -StoragePoolFriendlyName $StoragePoolName -FriendlyName $TieredDiskName -StorageTiers @($SSDTier, $HDDTier) -AutoNumberOfColumns -Interleave 64KB -ResiliencySettingName $DriveTierResiliency -UseMaximumSize
+#echo New-VirtualDisk -StoragePoolFriendlyName $StoragePoolName -FriendlyName $TieredDiskName -StorageTiers @($SSDTier, $HDDTier) -StorageTierSizes @($SSDTierSize, $HDDTierSize) -NumberOfColumns $NumberOfColumns -Interleave $InterleaveBytes -ResiliencySettingName $DriveTierResiliency
+echo New-VirtualDisk -StoragePoolFriendlyName $StoragePoolName -FriendlyName $TieredDiskName -StorageTiers @($SSDTier, $HDDTier) -StorageTierSizes @($SSDTierSize, $HDDTierSize) -AutoNumberOfColumns -Interleave $InterleaveBytes -ResiliencySettingName $DriveTierResiliency
+New-VirtualDisk -StoragePoolFriendlyName $StoragePoolName -FriendlyName $TieredDiskName -StorageTiers @($SSDTier, $HDDTier) -StorageTierSizes @($SSDTierSize, $HDDTierSize) -AutoNumberOfColumns -Interleave $InterleaveBytes -ResiliencySettingName $DriveTierResiliency
+
 # you can end up with different number of columns in SSD - Ex: With Simple 1SSD and 2HDD could end up with SSD-1Col, HDD-2Col
-New-VirtualDisk -StoragePoolFriendlyName $StoragePoolName -FriendlyName $TieredDiskName -StorageTiers @($SSDTier, $HDDTier) -StorageTierSizes @($SSDTierSize, $HDDTierSize) -ResiliencySettingName $DriveTierResiliency -AutoWriteCacheSize -AutoNumberOfColumns
+#New-VirtualDisk -StoragePoolFriendlyName $StoragePoolName -FriendlyName $TieredDiskName -StorageTiers @($SSDTier,-StorageTierSizes @($SSDTierSize, $HDDTierSize) $HDDTier)  -ResiliencySettingName $DriveTierResiliency -AutoWriteCacheSize -AutoNumberOfColumns
 
 # initialize the disk, format and mount as a single volume
 Write-Output "preparing volume"
 Get-VirtualDisk $TieredDiskName | Get-Disk | Initialize-Disk -PartitionStyle GPT
 # This will be Partition 2.  Storage pool metadata is in Partition 1
 Get-VirtualDisk $TieredDiskName | Get-Disk | New-Partition -DriveLetter $TieredDriveLetter -UseMaximumSize
-Initialize-Volume -DriveLetter $TieredDriveLetter -FileSystem NTFS -Confirm:$false -NewFileSystemLabel $TieredDriveLabel
+Initialize-Volume -DriveLetter $TieredDriveLetter -FileSystem NTFS -AllocationUnitSize $FilesystemAllocationUnitSize -Confirm:$false -NewFileSystemLabel $TieredDriveLabel
 Get-Volume -DriveLetter $TieredDriveLetter
 
 Write-Output "Operation complete"

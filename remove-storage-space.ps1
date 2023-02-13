@@ -1,8 +1,10 @@
 #Variables names here MUST MATCH create-storage-space.ps1
-$StoragePoolName = "My Storage Pool"
+$StoragePoolName = "bigpool"
+#Tiers in the storage pool
 $SSDTierName = "SSDTier"
 $HDDTierName = "HDDTier"
-$TieredDiskName = "My Tiered VirtualDisk"
+#Virtual Disk Name made up of disks in both tiers
+$TieredDiskName = "Tiered VirtualDisk"
 
 # Make sure they really want to do this!
 $choices  = '&Yes', '&No'
