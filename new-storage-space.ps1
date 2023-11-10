@@ -60,8 +60,8 @@ Get-StoragePool -FriendlyName $StoragePoolName | Get-PhysicalDisk | Select Frien
 # Get-StoragePool $StoragePoolName | Set-ResiliencySetting -Name Mirror -NumberOfColumnsDefault 1
 
 #Create two tiers in the Storage Pool created. One for SSD disks and one for HDD disks
-$SSDTier = New-StorageTier -StoragePoolFriendlyName $StoragePoolName -FriendlyName $SSDTierName -MediaType SSD
-$HDDTier = New-StorageTier -StoragePoolFriendlyName $StoragePoolName -FriendlyName $HDDTierName -MediaType HDD
+$SSDTier = New-StorageTier -StoragePoolFriendlyName $StoragePoolName -FriendlyName $SSDTierName -ResiliencySettingName $DriveTierResiliency -MediaType SSD
+$HDDTier = New-StorageTier -StoragePoolFriendlyName $StoragePoolName -FriendlyName $HDDTierName -ResiliencySettingName $DriveTierResiliency -MediaType HDD
 
 #Calculate tier sizes within this storage pool
 #Can override by setting sizes at top
